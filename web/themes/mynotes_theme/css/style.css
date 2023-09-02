@@ -1,0 +1,7 @@
+.site-header__inner__container nav ul li a{
+  text-decoration: none;
+
+}
+.site-header__inner__container nav ul{
+  list-style-type: none;
+}

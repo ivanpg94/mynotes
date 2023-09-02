@@ -1,0 +1,13 @@
+name: 'mynotes_theme'
+type: theme
+description: 'Tema personalizado que extiende el tema Olivero.'
+core_version_requirement: ^9 || ^10
+base theme: olivero
+package: Custom
+
+regions:
+  header: 'Header'
+  content: 'Body'
+
+libraries:
+  - mynotes_theme/style
