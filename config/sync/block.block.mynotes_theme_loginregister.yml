@@ -1,0 +1,33 @@
+uuid: 3f0c30f9-ab32-4700-8379-ed21a4e5a25b
+langcode: en
+status: true
+dependencies:
+  content:
+    - 'block_content:basic:e99c851a-d8cc-4b74-b01e-b63ed558dce6'
+  module:
+    - block_content
+    - user
+  theme:
+    - mynotes_theme
+id: mynotes_theme_loginregister
+theme: mynotes_theme
+region: content
+weight: -9
+provider: null
+plugin: 'block_content:e99c851a-d8cc-4b74-b01e-b63ed558dce6'
+settings:
+  id: 'block_content:e99c851a-d8cc-4b74-b01e-b63ed558dce6'
+  label: login-register
+  label_display: '0'
+  provider: block_content
+  status: true
+  info: ''
+  view_mode: full
+visibility:
+  user_role:
+    id: user_role
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'
+    roles:
+      anonymous: anonymous

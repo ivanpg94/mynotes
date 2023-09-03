@@ -11,7 +11,7 @@ _core:
 id: mynotes_theme_content
 theme: mynotes_theme
 region: content
-weight: -6
+weight: -7
 provider: null
 plugin: system_main_block
 settings:

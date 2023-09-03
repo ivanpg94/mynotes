@@ -9,7 +9,7 @@ _core:
 id: mynotes_theme_primary_local_tasks
 theme: mynotes_theme
 region: content
-weight: -7
+weight: -8
 provider: null
 plugin: local_tasks_block
 settings:

@@ -167,3 +167,30 @@ body {
 .text-summary-wrapper {
   display: none;
 }
+.container-button-login-register{
+  display:flex;
+  justify-content: space-around;
+}
+.container-button-login-register a{
+  text-decoration: none;
+  box-shadow: inset 0 0px 0 0 black;
+  background-color: #1c1c1c;
+  padding: 0.3rem 3.5rem;
+  color: white;
+}
+.button--primary {
+  border-color: #1c1c1c;
+  background-color: #1c1c1c;
+  color: white!important;
+}
+.tabs {
+  --tabs-highlight-color: #1c1c1c!important;
+}
+:is([type="color"],[type="date"],[type="datetime-local"],[type="email"],[type="file"],[type="month"],[type="number"],[type="password"],[type="search"],[type="tel"],[type="text"],[type="time"],[type="url"],[type="week"],textarea):focus {
+  border: solid 2px #1c1c1c;
+  outline: solid 2px #1c1c1c;
+}
+.button {
+  color: #1c1c1c;
+  border: solid 2px #1c1c1c;
+}
