@@ -102,8 +102,25 @@ body {
 
 
 
-
-
+.social-bar{
+  display: none;
+}
+#block-mynotes-theme-menu{
+  margin-bottom: 1rem
+}
+.main-content{
+  margin:0;
+}
+#block-mynotes-theme-content {
+  width: 80%;
+  margin: 0 auto;
+}
+#block-mynotes-theme-content .form-item-name input {
+  width: 100%
+}
+#block-mynotes-theme-content .form-item-pass input {
+  width: 100%
+}
 .site-header__initial{
   display: none;
 }
@@ -111,8 +128,11 @@ body {
   display: none;
 }
 #main-wrapper{
-  margin-top: 3rem;
   min-height: 94vh;
+}
+#page-wrapper{
+  min-height: 100vh;
+  min-width:100vw;
 }
 .views-field-title{
   display: flex;
