@@ -1,0 +1,38 @@
+uuid: 30978bdb-d4aa-4de2-8517-72e642a9d9a9
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_image_note
+    - node.type.note
+  module:
+    - image
+id: node.note.field_image_note
+field_name: field_image_note
+entity_type: node
+bundle: note
+label: 'Image note'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:file'
+  handler_settings: {  }
+  file_directory: '[date:custom:Y]-[date:custom:m]'
+  file_extensions: 'png gif jpg jpeg webp'
+  max_filesize: ''
+  max_resolution: ''
+  min_resolution: ''
+  alt_field: true
+  alt_field_required: true
+  title_field: false
+  title_field_required: false
+  default_image:
+    uuid: 96f64258-f591-4207-95d1-649d2a36ad86
+    alt: ''
+    title: ''
+    width: 223
+    height: 200
+field_type: image

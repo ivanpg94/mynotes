@@ -1,0 +1,20 @@
+uuid: 78c8bb26-bc71-4d15-885a-0d0558921fab
+langcode: en
+status: false
+dependencies:
+  theme:
+    - mynotes_theme
+_core:
+  default_config_hash: Q9_2whdOj1YIomfvsIfopROW4FT_X5pY0DjdOiOaQ5U
+id: mynotes_theme_primary_admin_actions
+theme: mynotes_theme
+region: header
+weight: -6
+provider: null
+plugin: local_actions_block
+settings:
+  id: local_actions_block
+  label: 'Primary admin actions'
+  label_display: '0'
+  provider: core
+visibility: {  }

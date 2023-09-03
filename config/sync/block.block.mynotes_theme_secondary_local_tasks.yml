@@ -1,0 +1,22 @@
+uuid: b5386a0a-6244-4b59-be63-c7ee293d7a8e
+langcode: en
+status: false
+dependencies:
+  theme:
+    - mynotes_theme
+_core:
+  default_config_hash: ydSxdq7R66I8UMC460rOzlfzvlUL4VRbdwc6z9DWaUI
+id: mynotes_theme_secondary_local_tasks
+theme: mynotes_theme
+region: header
+weight: -1
+provider: null
+plugin: local_tasks_block
+settings:
+  id: local_tasks_block
+  label: 'Secondary tabs'
+  label_display: '0'
+  provider: core
+  primary: false
+  secondary: true
+visibility: {  }

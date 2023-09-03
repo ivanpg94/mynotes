@@ -1,0 +1,22 @@
+uuid: 2882eb4d-19a9-4068-8bbe-af92123c6de3
+langcode: en
+status: false
+dependencies:
+  module:
+    - system
+  theme:
+    - mynotes_theme
+_core:
+  default_config_hash: BZ5tpW7H8X4PVGRm3MImTIHd2tN0eF7zOtp4SpRYUA0
+id: mynotes_theme_messages
+theme: mynotes_theme
+region: header
+weight: -4
+provider: null
+plugin: system_messages_block
+settings:
+  id: system_messages_block
+  label: 'Status messages'
+  label_display: '0'
+  provider: system
+visibility: {  }

@@ -1,0 +1,25 @@
+uuid: 0e941597-bd5a-4901-b114-36692763c447
+langcode: en
+status: true
+dependencies:
+  content:
+    - 'block_content:basic:13d4ccc6-b806-4dff-aed9-0ee9702db2f2'
+  module:
+    - block_content
+  theme:
+    - mynotes_theme
+id: mynotes_theme_menu
+theme: mynotes_theme
+region: header
+weight: -8
+provider: null
+plugin: 'block_content:13d4ccc6-b806-4dff-aed9-0ee9702db2f2'
+settings:
+  id: 'block_content:13d4ccc6-b806-4dff-aed9-0ee9702db2f2'
+  label: menu
+  label_display: '0'
+  provider: block_content
+  status: true
+  info: ''
+  view_mode: full
+visibility: {  }

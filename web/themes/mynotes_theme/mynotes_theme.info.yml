@@ -6,8 +6,8 @@ base theme: olivero
 package: Custom
 
 regions:
-  header: 'Header'
-  content: 'Body'
+  header: 'Header notes'
+  content: 'Body notes'
 
 libraries:
   - mynotes_theme/style

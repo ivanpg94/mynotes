@@ -1,0 +1,22 @@
+uuid: cb5fd1ec-d961-4925-a362-a4a671521040
+langcode: en
+status: true
+dependencies:
+  module:
+    - system
+  theme:
+    - mynotes_theme
+_core:
+  default_config_hash: erQSEZF2XUjNmgTl0uNRBzmg18ZGXwUcw2FhApoeuHk
+id: mynotes_theme_content
+theme: mynotes_theme
+region: content
+weight: -6
+provider: null
+plugin: system_main_block
+settings:
+  id: system_main_block
+  label: 'Main page content'
+  label_display: '0'
+  provider: system
+visibility: {  }

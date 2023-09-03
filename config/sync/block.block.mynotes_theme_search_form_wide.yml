@@ -1,0 +1,23 @@
+uuid: e35a011e-6f11-4b0e-ae0c-80c34eaa534c
+langcode: en
+status: false
+dependencies:
+  module:
+    - search
+  theme:
+    - mynotes_theme
+_core:
+  default_config_hash: imMyHD6LYci0gtXq56qr9ZKGHzbEG9uFydrN5EhKtSU
+id: mynotes_theme_search_form_wide
+theme: mynotes_theme
+region: header
+weight: -5
+provider: null
+plugin: search_form_block
+settings:
+  id: search_form_block
+  label: 'Search form (wide)'
+  label_display: '0'
+  provider: search
+  page_id: ''
+visibility: {  }

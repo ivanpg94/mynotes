@@ -1,0 +1,22 @@
+uuid: d77c8fba-fcde-4f6e-a13e-aa6b0c0d750a
+langcode: en
+status: false
+dependencies:
+  module:
+    - system
+  theme:
+    - mynotes_theme
+_core:
+  default_config_hash: eYL19CLDyinGTWYQfBD1DswWzglEotE_kHnHx3AxTXM
+id: mynotes_theme_powered
+theme: mynotes_theme
+region: header
+weight: 3
+provider: null
+plugin: system_powered_by_block
+settings:
+  id: system_powered_by_block
+  label: 'Powered by Drupal'
+  label_display: '0'
+  provider: system
+visibility: {  }
