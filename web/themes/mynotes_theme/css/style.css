@@ -128,7 +128,7 @@ body {
   display: none;
 }
 #main-wrapper{
-  min-height: 94vh;
+  min-height: 100vh;
 }
 #page-wrapper{
   min-height: 100vh;
@@ -214,4 +214,31 @@ body {
 }
 .views-view-grid__item-inner .views-field-view-node span{
   width: 100%;
+}
+.views-view-grid__item{
+  border: solid 1px #1c1c1c;
+  border-radius: 5px;
+  height: 100%;
+  padding: 0.5rem;
+}
+#block-mynotes-theme-addnone{
+  position: absolute;
+  right: 30px;
+  bottom: 20px;
+}
+.addnote-mynote a{
+  position: absolute;
+  right: 0.2rem;
+  bottom: 1.5rem;
+  color: white;
+  background-color: #1c1c1c;
+  font-size: 50px;
+  padding: 1rem;
+  border-radius: 50%;
+}
+.ui-dialog{
+  width: 100%!important;
+}
+#edit-preview{
+  display: none;
 }

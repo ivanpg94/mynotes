@@ -2,10 +2,7 @@ uuid: e7e08330-9c53-46eb-b669-f55a97ab3559
 langcode: en
 status: true
 dependencies:
-  content:
-    - 'block_content:basic:0b345ad3-9ee7-4d87-aca6-c91ba5884017'
   module:
-    - block_content
     - user
   theme:
     - mynotes_theme

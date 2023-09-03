@@ -1,0 +1,40 @@
+uuid: 93b90c03-97ca-4d5a-86ba-db8635c2c56e
+langcode: en
+status: true
+dependencies:
+  content:
+    - 'block_content:basic:15093f98-88ac-4ccc-89d4-9c93c1a43684'
+  module:
+    - block_content
+    - system
+    - user
+  theme:
+    - mynotes_theme
+id: mynotes_theme_addnone
+theme: mynotes_theme
+region: content
+weight: -5
+provider: null
+plugin: 'block_content:15093f98-88ac-4ccc-89d4-9c93c1a43684'
+settings:
+  id: 'block_content:15093f98-88ac-4ccc-89d4-9c93c1a43684'
+  label: 'add none'
+  label_display: '0'
+  provider: block_content
+  status: true
+  info: ''
+  view_mode: full
+visibility:
+  user_role:
+    id: user_role
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'
+    roles:
+      authenticated: authenticated
+      content_editor: content_editor
+      administrator: administrator
+  request_path:
+    id: request_path
+    negate: false
+    pages: /dashboard
