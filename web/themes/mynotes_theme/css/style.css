@@ -243,7 +243,7 @@ body {
   display: none;
 }
 .form-item__label{
-  display: none;
+  display: block;
 }
 .form-item-body-0-value{
   position: absolute;
