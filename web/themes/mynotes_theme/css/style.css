@@ -242,9 +242,6 @@ body {
 #edit-preview{
   display: none;
 }
-.form-item__label{
-  display: block;
-}
 .form-item-body-0-value{
   position: absolute;
   margin-top: 3rem;
@@ -265,4 +262,7 @@ body {
 .logo-mynotes{
   display: flex;
   justify-content: center;
+}
+.text-full .js-form-item-body-0-value .form-item__label{
+  display: none;
 }
