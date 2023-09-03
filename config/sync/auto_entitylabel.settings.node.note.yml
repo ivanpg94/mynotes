@@ -1,0 +1,9 @@
+status: 1
+pattern: ''
+escape: true
+preserve_titles: false
+save: false
+chunk: 50
+dependencies:
+  config:
+    - node.type.note

@@ -194,3 +194,24 @@ body {
   color: #1c1c1c;
   border: solid 2px #1c1c1c;
 }
+.views-view-grid__item-inner{
+  position: relative;
+}
+.views-view-grid__item-inner .views-field-view-node{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
+.views-view-grid__item-inner .views-field-view-node span a{
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  color: transparent;
+}
+.views-view-grid__item-inner .views-field-view-node span{
+  width: 100%;
+}
