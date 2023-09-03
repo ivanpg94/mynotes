@@ -227,7 +227,7 @@ body {
   bottom: 20px;
 }
 .addnote-mynote a{
-  position: absolute;
+  position: fixed;
   right: 0.2rem;
   bottom: 1.5rem;
   color: white;
@@ -241,4 +241,28 @@ body {
 }
 #edit-preview{
   display: none;
+}
+.form-item__label{
+  display: none;
+}
+.form-item-body-0-value{
+  position: absolute;
+  margin-top: 3rem;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+}
+.ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
+  border-color: white!important;
+}
+.ck-toolbar{
+  border: 0px!important;
+}
+:focus-visible {
+  outline: -webkit-focus-ring-color auto 0px;
+}
+.logo-mynotes{
+  display: flex;
+  justify-content: center;
 }
