@@ -20,14 +20,6 @@ content:
     label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 2
-    region: content
-  field_category:
-    type: entity_reference_label
-    label: above
-    settings:
-      link: true
-    third_party_settings: {  }
     weight: 1
     region: content
   links:
@@ -36,4 +28,5 @@ content:
     weight: 0
     region: content
 hidden:
+  field_category: true
   field_image_note: true

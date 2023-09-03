@@ -2,6 +2,8 @@ uuid: e4ce099b-1040-4f4f-8b01-dc8e4a325a89
 langcode: en
 status: true
 dependencies:
+  module:
+    - user
   theme:
     - mynotes_theme
 _core:
@@ -9,7 +11,7 @@ _core:
 id: mynotes_theme_primary_local_tasks
 theme: mynotes_theme
 region: content
-weight: -8
+weight: -7
 provider: null
 plugin: local_tasks_block
 settings:
@@ -19,4 +21,13 @@ settings:
   provider: core
   primary: true
   secondary: false
-visibility: {  }
+visibility:
+  user_role:
+    id: user_role
+    negate: false
+    context_mapping:
+      user: '@user.current_user_context:current_user'
+    roles:
+      authenticated: authenticated
+      content_editor: content_editor
+      administrator: administrator
