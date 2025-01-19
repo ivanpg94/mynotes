@@ -778,3 +778,16 @@ if (file_exists(__DIR__ . '/settings.ddev.php') && getenv('IS_DDEV_PROJECT') == 
 # if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
 #   include $app_root . '/' . $site_path . '/settings.local.php';
 # }
+$settings['hash_salt'] = '1MUErf750xz67u1VtRd-f5l65HulYDbkVNuSGdhAHg80q2GOFGN1ZnAF3aomMe6s9Hk3qV5vsg';
+$databases['default']['default'] = array (
+  'database' => 'u985217890_mynotes',
+  'username' => 'u985217890_mynotes',
+  'password' => 'FSHSHu1994!',
+  'prefix' => '',
+  'host' => 'mysql',
+  'port' => '3306',
+  'namespace' => 'Drupal\\mysql\\Driver\\Database\\mysql',
+  'driver' => 'mysql',
+  'autoload' => 'core/modules/mysql/src/Driver/Database/mysql/',
+);
+$settings['config_sync_directory'] = '../config/sync';

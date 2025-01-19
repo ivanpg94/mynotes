@@ -1,9 +1,9 @@
-uuid: ce1fb4b4-fe08-41bb-86e1-5ed60a8ca9f7
+uuid: f45910e6-f257-4e40-bb8e-b23a78e0169c
 langcode: en
 status: true
 dependencies:
   content:
-    - 'block_content:basic:82a59e9b-ed9b-41af-a6aa-da73e92c5a6a'
+    - 'block_content:basic:b8ea0524-fc15-4929-b22f-47b297b680a5'
   module:
     - block_content
     - user
@@ -14,9 +14,9 @@ theme: mynotes_theme
 region: content
 weight: -9
 provider: null
-plugin: 'block_content:82a59e9b-ed9b-41af-a6aa-da73e92c5a6a'
+plugin: 'block_content:b8ea0524-fc15-4929-b22f-47b297b680a5'
 settings:
-  id: 'block_content:82a59e9b-ed9b-41af-a6aa-da73e92c5a6a'
+  id: 'block_content:b8ea0524-fc15-4929-b22f-47b297b680a5'
   label: 'logo mynotes'
   label_display: '0'
   provider: block_content
