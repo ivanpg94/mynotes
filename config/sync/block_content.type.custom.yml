@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: custom
 label: custom
-revision: 0
+revision: false
 description: ''

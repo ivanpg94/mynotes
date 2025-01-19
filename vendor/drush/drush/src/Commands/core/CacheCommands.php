@@ -4,31 +4,35 @@ declare(strict_types=1);
 
 namespace Drush\Commands\core;
 
-use Consolidation\AnnotatedCommand\Hooks\HookManager;
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Consolidation\AnnotatedCommand\CommandData;
 use Consolidation\AnnotatedCommand\Events\CustomEventAwareInterface;
 use Consolidation\AnnotatedCommand\Events\CustomEventAwareTrait;
+use Consolidation\AnnotatedCommand\Hooks\HookManager;
+use Consolidation\AnnotatedCommand\Input\StdinAwareInterface;
+use Consolidation\AnnotatedCommand\Input\StdinAwareTrait;
 use Consolidation\OutputFormatters\StructuredData\PropertyList;
+use Drupal\Core\Asset\AssetQueryStringInterface;
+use Drupal\Core\Asset\JsCollectionOptimizerLazy;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
+use Drupal\Core\Plugin\CachedDiscoveryClearerInterface;
+use Drupal\Core\Routing\RouteBuilderInterface;
+use Drupal\Core\Theme\Registry;
 use Drush\Attributes as CLI;
 use Drush\Boot\BootstrapManager;
 use Drush\Boot\DrupalBootLevels;
+use Drush\Commands\AutowireTrait;
 use Drush\Commands\DrushCommands;
-use Drupal\Core\DrupalKernel;
-use Drupal\Core\Site\Settings;
-use Drupal\Core\Cache\Cache;
 use Drush\Utils\StringUtils;
-use Consolidation\AnnotatedCommand\Input\StdinAwareInterface;
-use Consolidation\AnnotatedCommand\Input\StdinAwareTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Exception\IOException;
-use Composer\Autoload\ClassLoader;
 
 /*
  * Interact with Drupal's Cache API.
  */
 final class CacheCommands extends DrushCommands implements CustomEventAwareInterface, StdinAwareInterface
 {
+    use AutowireTrait;
     use CustomEventAwareTrait;
     use StdinAwareTrait;
 
@@ -36,36 +40,22 @@ final class CacheCommands extends DrushCommands implements CustomEventAwareInter
     const TAGS = 'cache:tags';
     const CLEAR = 'cache:clear';
     const SET = 'cache:set';
-    const REBUILD = 'cache:rebuild';
     const EVENT_CLEAR = 'cache-clear';
 
     public function __construct(
         private CacheTagsInvalidatorInterface $invalidator,
-        private $themeRegistry,
-        private $routerBuilder,
-        private $jsOptimizer,
+        private Registry $themeRegistry,
+        private RouteBuilderInterface $routerBuilder,
+        // @todo Type hints not sufficient for unknown reason.
+        #[Autowire(service: 'asset.js.collection_optimizer')]
+        private JsCollectionOptimizerLazy $jsOptimizer,
+        #[Autowire(service: 'asset.css.collection_optimizer')]
         private $cssOptimizer,
-        private $pluginCacheClearer,
+        private CachedDiscoveryClearerInterface $pluginCacheClearer,
         private BootstrapManager $bootstrapManager,
-        private ClassLoader $autoloader
+        private AssetQueryStringInterface $assetQueryString
     ) {
         parent::__construct();
-    }
-
-    public static function create(ContainerInterface $container, $drush_container): self
-    {
-        $commandHandler = new static(
-            $container->get('cache_tags.invalidator'),
-            $container->get('theme.registry'),
-            $container->get('router.builder'),
-            $container->get('asset.js.collection_optimizer'),
-            $container->get('asset.css.collection_optimizer'),
-            $container->get('plugin.cache_clearer'),
-            $drush_container->get('bootstrap.manager'),
-            $drush_container->get('loader')
-        );
-
-        return $commandHandler;
     }
 
     /**
@@ -141,14 +131,14 @@ final class CacheCommands extends DrushCommands implements CustomEventAwareInter
         if (empty($input->getArgument('type'))) {
             $types = $this->getTypes($this->bootstrapManager->hasBootstrapped(DrupalBootLevels::FULL));
             $choices = array_combine(array_keys($types), array_keys($types));
-            $type = $this->io()->choice(dt("Choose a cache to clear"), $choices, 'render');
+            $type = $this->io()->select(dt("Choose a cache to clear"), $choices, 'render', scroll: 20);
             $input->setArgument('type', $type);
         }
 
         if ($input->getArgument('type') == 'bin' && empty($input->getArgument('args'))) {
             $bins = Cache::getBins();
             $choices = array_combine(array_keys($bins), array_keys($bins));
-            $chosen = $this->io()->choice(dt("Choose a cache to clear"), $choices, 'default');
+            $chosen = $this->io()->select(dt("Choose a cache to clear"), $choices, 'default', scroll: 20);
             $input->setArgument('args', [$chosen]);
         }
     }
@@ -185,14 +175,11 @@ final class CacheCommands extends DrushCommands implements CustomEventAwareInter
             $data = $this->stdin()->contents();
         }
 
-        // Now, we parse the object.
-        switch ($options['input-format']) {
-            case 'json':
-                $data = json_decode($data, true);
-                if ($data === false) {
-                    throw new \Exception('Unable to parse JSON.');
-                }
-                break;
+        if ($options['input-format'] === 'json') {
+            $data = json_decode($data, true);
+            if ($data === false) {
+                throw new \Exception('Unable to parse JSON.');
+            }
         }
 
         if ($options['cache-get']) {
@@ -200,7 +187,7 @@ final class CacheCommands extends DrushCommands implements CustomEventAwareInter
             if (is_object($data) && $data->data) {
                 $data = $data->data;
             } elseif (is_array($data) && isset($data['data'])) {
-                // But $data returned from `drush cache-get --format=json` will be an array.
+                // But $data returned from `drush cache:get --format=json` will be an array.
                 $data = $data['data'];
             } else {
                 // If $data is neither object nor array and cache-get was specified, then
@@ -210,37 +197,6 @@ final class CacheCommands extends DrushCommands implements CustomEventAwareInter
         }
 
         return $data;
-    }
-
-    /**
-     * Rebuild all caches.
-     *
-     * This is a copy of core/rebuild.php.
-     */
-    #[CLI\Command(name: self::REBUILD, aliases: ['cr', 'rebuild', 'cache-rebuild'])]
-    #[CLI\Option(name: 'cache-clear', description: 'Set to 0 to suppress normal cache clearing; the caller should then clear if needed.')]
-    #[CLI\Bootstrap(level: DrupalBootLevels::SITE)]
-    public function rebuild($options = ['cache-clear' => true])
-    {
-        if (!$options['cache-clear']) {
-            $this->logger()->info(dt("Skipping cache-clear operation due to --no-cache-clear option."));
-            return true;
-        }
-
-        // We no longer clear APC and similar caches as they are useless on CLI.
-        // See https://github.com/drush-ops/drush/pull/2450
-        $root  = $this->bootstrapManager->getRoot();
-        require_once DRUSH_DRUPAL_CORE . '/includes/utility.inc';
-
-        $request = $this->bootstrapManager->bootstrap()->getRequest();
-        DrupalKernel::bootEnvironment();
-
-        $site_path = DrupalKernel::findSitePath($request);
-        Settings::initialize($root, $site_path, $this->autoloader);
-
-        // drupal_rebuild() calls drupal_flush_all_caches() itself, so we don't do it manually.
-        drupal_rebuild($this->autoloader, $request);
-        $this->logger()->success(dt('Cache rebuild complete.'));
     }
 
     #[CLI\Hook(type: HookManager::ARGUMENT_VALIDATOR, target: self::CLEAR)]
@@ -256,7 +212,7 @@ final class CacheCommands extends DrushCommands implements CustomEventAwareInter
             if (!$this->bootstrapManager->hasBootstrapped(DrupalBootLevels::FULL)) {
                 $all_types = $this->getTypes(true);
                 if (array_key_exists($type, $all_types)) {
-                    throw new \Exception(dt("'!type' cache requires a working Drupal site to operate on. Use the --root and --uri options, or a site @alias, or cd to a directory containing a Drupal settings.php file.", ['!type' => $type]));
+                    throw new \Exception(dt("'!type' cache requires a working Drupal site to operate on. Make sure that the `drush` you are calling is a dependency of a your site\'s composer.json. The --uri option might also help.", ['!type' => $type]));
                 } else {
                     throw new \Exception(dt("'!type' cache is not a valid cache type. There may be more cache types available if you select a working Drupal site.", ['!type' => $type]));
                 }
@@ -331,7 +287,7 @@ final class CacheCommands extends DrushCommands implements CustomEventAwareInter
 
     public function clearCssJs(): void
     {
-        _drupal_flush_css_js();
+        $this->assetQueryString->reset();
         $this->cssOptimizer->deleteAll();
         $this->jsOptimizer->deleteAll();
     }

@@ -14,8 +14,6 @@ class PreflightVerify
 {
     /**
      * Throw an exception if the environment is not right for running Drush.
-     *
-     * @param Environment $environment
      */
     public function verify(Environment $environment): void
     {
@@ -38,8 +36,11 @@ class PreflightVerify
      * @param string $minimumPhpVersion
      *   The minimum allowable php version
      */
-    public function confirmPhpVersion(string $minimumPhpVersion): void
+    public function confirmPhpVersion(string|null $minimumPhpVersion): void
     {
+        if (empty($minimumPhpVersion)) {
+            return;
+        }
         if (version_compare(phpversion(), $minimumPhpVersion) < 0 && !getenv('DRUSH_NO_MIN_PHP')) {
             throw new \Exception(StringUtils::interpolate('Your command line PHP installation is too old. Drush requires at least PHP {version}. To suppress this check, set the environment variable DRUSH_NO_MIN_PHP=1', ['version' => $minimumPhpVersion]));
         }
@@ -47,8 +48,6 @@ class PreflightVerify
 
     /**
      * Fail if not being run from the command line.
-     *
-     * @param Environment $environment
      */
     protected function confirmUsingCLI(Environment $environment): void
     {
@@ -74,7 +73,7 @@ class PreflightVerify
                 $prohibited_list[] = $prohibited_mode;
             }
         }
-        if (!empty($prohibited_list)) {
+        if ($prohibited_list !== []) {
             throw new \Exception(StringUtils::interpolate('The following restricted PHP modes have non-empty values: {prohibited_list}. This configuration is incompatible with drush.  {php_ini_msg}', ['prohibited_list' => implode(' and ', $prohibited_list), 'php_ini_msg' => $this->loadedPhpIniMessage()]));
         }
     }
