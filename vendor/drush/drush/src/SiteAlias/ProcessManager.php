@@ -18,6 +18,18 @@ use Symfony\Component\Process\Process;
  */
 class ProcessManager extends ConsolidationProcessManager
 {
+    protected $drupalFinder;
+
+    public function setDrupalFinder($drupalFinder): void
+    {
+        $this->drupalFinder = $drupalFinder;
+    }
+
+    public function getDrupalFinder()
+    {
+        return $this->drupalFinder;
+    }
+
     /**
      * Run a Drush command on a site alias (or @self).
      */
@@ -66,13 +78,13 @@ class ProcessManager extends ConsolidationProcessManager
             return $siteAlias->get('paths.drush-script');
         }
 
-        // If the provided site alias is for a remote site / container et. al.,
-        // then use the 'drush' in the $PATH.
+        // A remote site / container et. al.,
         if ($this->hasTransport($siteAlias)) {
             if ($siteAlias->hasRoot()) {
                 return Path::join($siteAlias->root(), $this->relativePathToVendorBinDrush());
             }
 
+            // Fallback to the 'drush' in the $PATH.
             return $defaultDrushScript;
         }
 
@@ -91,15 +103,14 @@ class ProcessManager extends ConsolidationProcessManager
     }
 
     /**
-     * Return the relative path to 'vendor/bin/drush' from the project root.
+     * Return the relative path to 'vendor/bin/drush' from the Drupal root.
      */
     protected function relativePathToVendorBinDrush()
     {
-        $absoluteVendorBin = $_composer_bin_dir ?? Path::join($this->getConfig()->get('drush.vendor-dir'), 'bin');
-        $basePath = $this->getConfig()->get('drush.base-dir');
-
-        $relativeVendorBin = Path::makeRelative($absoluteVendorBin, $basePath);
-
+        // https://getcomposer.org/doc/articles/vendor-binaries.md#finding-the-composer-bin-dir-from-a-binary
+        $vendorBin = $GLOBALS['_composer_bin_dir'] ?? Path::join($this->getDrupalFinder()->getVendorDir(), 'bin');
+        $drupalRoot = $this->getDrupalFinder()->getDrupalRoot();
+        $relativeVendorBin = Path::makeRelative($vendorBin, $drupalRoot);
         return Path::join($relativeVendorBin, 'drush');
     }
 
@@ -129,7 +140,7 @@ class ProcessManager extends ConsolidationProcessManager
      *
      *   A wrapper around Symfony Process.
      */
-    public function process($commandline, $cwd = null, array $env = null, $input = null, $timeout = 60): ProcessBase
+    public function process($commandline, $cwd = null, ?array $env = null, $input = null, $timeout = 60): ProcessBase
     {
         $process = parent::process($commandline, $cwd, $env, $input, $timeout);
         return $this->configureProcess($process);
@@ -143,7 +154,7 @@ class ProcessManager extends ConsolidationProcessManager
      * @param mixed|null $input   The input as stream resource, scalar or \Traversable, or null for no input
      * @param int|float|null $timeout The timeout in seconds or null to disable
      */
-    public function shell($command, $cwd = null, array $env = null, $input = null, $timeout = 60): ProcessBase
+    public function shell($command, $cwd = null, ?array $env = null, $input = null, $timeout = 60): ProcessBase
     {
         $process = parent::shell($command, $cwd, $env, $input, $timeout);
         return $this->configureProcess($process);

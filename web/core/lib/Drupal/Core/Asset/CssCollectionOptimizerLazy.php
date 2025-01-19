@@ -8,7 +8,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\Core\State\StateInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -42,8 +41,6 @@ class CssCollectionOptimizerLazy implements AssetCollectionGroupOptimizerInterfa
    *   The time service.
    * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state key/value store.
    */
   public function __construct(
     protected readonly AssetCollectionGrouperInterface $grouper,
@@ -56,7 +53,6 @@ class CssCollectionOptimizerLazy implements AssetCollectionGroupOptimizerInterfa
     protected readonly FileUrlGeneratorInterface $fileUrlGenerator,
     protected readonly TimeInterface $time,
     protected readonly LanguageManagerInterface $languageManager,
-    protected readonly StateInterface $state
   ) {}
 
   /**
@@ -134,15 +130,7 @@ class CssCollectionOptimizerLazy implements AssetCollectionGroupOptimizerInterfa
   /**
    * {@inheritdoc}
    */
-  public function getAll() {
-    return $this->state->get('drupal_css_cache_files', []);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function deleteAll() {
-    $this->state->delete('drupal_css_cache_files');
     $this->fileSystem->deleteRecursive('assets://css');
   }
 
@@ -163,7 +151,7 @@ class CssCollectionOptimizerLazy implements AssetCollectionGroupOptimizerInterfa
       $data .= $this->optimizer->optimize($css_asset);
     }
     // Per the W3C specification at
-    // http://www.w3.org/TR/REC-CSS2/cascade.html#at-import, @import rules must
+    // https://www.w3.org/TR/REC-CSS2/cascade.html#at-import, @import rules must
     // precede any other style, so we move those to the top. The regular
     // expression is expressed in NOWDOC since it is detecting backslashes as
     // well as single and double quotes. It is difficult to read when

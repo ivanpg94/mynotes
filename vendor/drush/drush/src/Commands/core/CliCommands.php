@@ -4,23 +4,32 @@ declare(strict_types=1);
 
 namespace Drush\Commands\core;
 
+use Drupal\Component\DependencyInjection\Container;
+use Drupal\Component\Render\MarkupInterface;
+use Drupal\Core\Config\ConfigBase;
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drush\Attributes as CLI;
+use Drush\Boot\DrupalBootLevels;
+use Drush\Commands\AutowireTrait;
 use Drush\Commands\DrushCommands;
 use Drush\Drush;
+use Drush\Psysh\Caster;
 use Drush\Psysh\DrushCommand;
 use Drush\Psysh\DrushHelpCommand;
-use Drupal\Component\Assertion\Handle;
 use Drush\Psysh\Shell;
 use Drush\Runtime\Runtime;
 use Drush\Utils\FsUtils;
 use Psy\Configuration;
 use Psy\VersionUpdater\Checker;
-use Drush\Boot\DrupalBootLevels;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 final class CliCommands extends DrushCommands
 {
+    use AutowireTrait;
+
     const DOCS_REPL = 'docs:repl';
     const PHP = 'php:cli';
 
@@ -28,15 +37,6 @@ final class CliCommands extends DrushCommands
         protected EntityTypeManagerInterface $entityTypeManager
     ) {
         parent::__construct();
-    }
-
-    public static function create(ContainerInterface $container): self
-    {
-        $commandHandler = new static(
-            $container->get('entity_type.manager')
-        );
-
-        return $commandHandler;
     }
 
     /**
@@ -54,7 +54,7 @@ final class CliCommands extends DrushCommands
     /**
      * Open an interactive shell on a Drupal site.
      */
-    #[CLI\Command(name: self::PHP, aliases: ['php,core:cli', 'core-cli'])]
+    #[CLI\Command(name: self::PHP, aliases: ['php', 'core:cli', 'core-cli'])]
     #[CLI\Option(name: 'version-history', description: 'Use command history based on Drupal version. Default is per site.')]
     #[CLI\Option(name: 'cwd', description: 'A directory to change to before launching the shell. Default is the project root directory')]
     #[CLI\Topics(topics: [self::DOCS_REPL])]
@@ -82,9 +82,12 @@ final class CliCommands extends DrushCommands
         $shell = new Shell($configuration);
 
 
-        // Register the assertion handler so exceptions are thrown instead of errors
-        // being triggered. This plays nicer with PsySH.
-        Handle::register();
+        // Register the assertion handler so exceptions are thrown instead of
+        // errors being triggered. This plays nicer with PsySH. Since we're
+        // using exceptions, turn error warnings off.
+        assert_options(ASSERT_EXCEPTION, true);
+        assert_options(ASSERT_WARNING, false);
+
         $shell->setScopeVariables(['container' => \Drupal::getContainer()]);
 
         // Add our casters to the shell configuration.
@@ -108,6 +111,7 @@ final class CliCommands extends DrushCommands
         // command in preflight still, but the subscriber instances are already
         // created from before. Call terminate() regardless, this is a no-op for all
         // DrupalBoot classes except DrupalBoot8.
+        // @phpstan-ignore if.alwaysTrue
         if ($bootstrap = Drush::bootstrap()) {
             $bootstrap->terminate();
         }
@@ -132,12 +136,12 @@ final class CliCommands extends DrushCommands
         $ignored_commands = [
             'help',
             self::PHP,
-            'core:cli',
+            CliCommands::PHP,
             'php',
-            'php:eval',
+            PhpCommands::EVAL,
             'eval',
             'ev',
-            'php:script',
+            PhpCommands::SCRIPT,
             'scr',
         ];
         $php_keywords = $this->getPhpKeywords();
@@ -168,19 +172,19 @@ final class CliCommands extends DrushCommands
      * See http://symfony.com/doc/current/components/var_dumper/advanced.html#casters
      * for more information.
      *
-     * @return array.
+     * @return callable[].
      *   An array of caster callbacks keyed by class or interface.
      */
     protected function getCasters(): array
     {
         return [
-        'Drupal\Core\Entity\ContentEntityInterface' => 'Drush\Psysh\Caster::castContentEntity',
-        'Drupal\Core\Field\FieldItemListInterface' => 'Drush\Psysh\Caster::castFieldItemList',
-        'Drupal\Core\Field\FieldItemInterface' => 'Drush\Psysh\Caster::castFieldItem',
-        'Drupal\Core\Config\Entity\ConfigEntityInterface' => 'Drush\Psysh\Caster::castConfigEntity',
-        'Drupal\Core\Config\ConfigBase' => 'Drush\Psysh\Caster::castConfig',
-        'Drupal\Component\DependencyInjection\Container' => 'Drush\Psysh\Caster::castContainer',
-        'Drupal\Component\Render\MarkupInterface' => 'Drush\Psysh\Caster::castMarkup',
+            ContentEntityInterface::class => Caster::castContentEntity(...),
+            FieldItemListInterface::class => Caster::castFieldItemList(...),
+            FieldItemInterface::class => Caster::castFieldItem(...),
+            ConfigEntityInterface::class => Caster::castConfigEntity(...),
+            ConfigBase::class => Caster::castConfig(...),
+            Container::class => Caster::castContainer(...),
+            MarkupInterface::class => Caster::castMarkup(...),
         ];
     }
 
@@ -189,7 +193,6 @@ final class CliCommands extends DrushCommands
      *
      * This can either be site specific (default) or Drupal version specific.
      *
-     * @param array $options
      *
      * @return string.
      */
@@ -308,16 +311,23 @@ final class CliCommands extends DrushCommands
     {
         foreach ($this->entityTypeManager->getDefinitions() as $definition) {
             $class = $definition->getClass();
+            $reflectionClass = new \ReflectionClass($class);
             $parts = explode('\\', $class);
+            $end = end($parts);
+            // https://github.com/drush-ops/drush/pull/5729, https://github.com/drush-ops/drush/issues/5730
+            // and https://github.com/drush-ops/drush/issues/5899.
+            if ($reflectionClass->isFinal() || $reflectionClass->isAbstract() || class_exists($end)) {
+                continue;
+            }
             // Make it possible to easily load revisions.
-            eval(sprintf('class %s extends \%s {
+            eval(sprintf('class %s extends %s {
                 public static function loadRevision($id) {
                     $entity_type_repository = \Drupal::service("entity_type.repository");
                     $entity_type_manager = \Drupal::entityTypeManager();
                     $storage = $entity_type_manager->getStorage($entity_type_repository->getEntityTypeFromClass(static::class));
                     return $storage->loadRevision($id);
                 }
-            }', end($parts), $class));
+            }', $end, $class));
         }
     }
 }

@@ -4,44 +4,30 @@ declare(strict_types=1);
 
 namespace Drush\Commands\core;
 
-use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
-use Drupal\Core\State\StateInterface;
-use Drush\Attributes as CLI;
+use Consolidation\SiteAlias\SiteAliasManagerInterface;
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
+use Drush\Attributes as CLI;
 use Drush\Boot\BootstrapManager;
 use Drush\Boot\DrupalBootLevels;
+use Drush\Commands\AutowireTrait;
 use Drush\Commands\DrushCommands;
 use Drush\Drush;
 use Drush\Exec\ExecTrait;
-use Consolidation\SiteAlias\SiteAliasManagerAwareInterface;
-use Consolidation\SiteAlias\SiteAliasManagerAwareTrait;
-use Drupal\Core\Url;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
-final class LoginCommands extends DrushCommands implements SiteAliasManagerAwareInterface
+#[CLI\Bootstrap(DrupalBootLevels::NONE)]
+final class LoginCommands extends DrushCommands
 {
-    use SiteAliasManagerAwareTrait;
+    use AutowireTrait;
     use ExecTrait;
 
     const LOGIN = 'user:login';
 
-    public function __construct(protected TimeInterface $time, protected LanguageManagerInterface $languageManager, private BootstrapManager $bootstrapManager)
-    {
+    public function __construct(
+        private readonly BootstrapManager $bootstrapManager,
+        private readonly SiteAliasManagerInterface $siteAliasManager
+    ) {
         parent::__construct();
-    }
-
-    public static function create(ContainerInterface $container, $drush_container): self
-    {
-        $commandHandler = new static(
-            $container->get('datetime.time'),
-            $container->get('language_manager'),
-            $drush_container->get('bootstrap.manager')
-        );
-
-        return $commandHandler;
     }
 
     /**
@@ -64,7 +50,7 @@ final class LoginCommands extends DrushCommands implements SiteAliasManagerAware
     {
         // Redispatch if called against a remote-host so a browser is started on the
         // the *local* machine.
-        $aliasRecord = $this->siteAliasManager()->getSelf();
+        $aliasRecord = $this->siteAliasManager->getSelf();
         if ($this->processManager()->hasTransport($aliasRecord)) {
             $process = $this->processManager()->drush($aliasRecord, self::LOGIN, [$path], Drush::redispatchOptions());
             $process->mustRun();
@@ -95,7 +81,7 @@ final class LoginCommands extends DrushCommands implements SiteAliasManagerAware
                 throw new \InvalidArgumentException(dt('Account !name is blocked and thus cannot login. The user:unblock command may be helpful.', ['!name' => $account->getAccountName()]));
             }
 
-            $timestamp = $this->time->getRequestTime();
+            $timestamp = \Drupal::time()->getRequestTime();
             $link = Url::fromRoute(
                 'user.reset.login',
                 [
@@ -106,7 +92,7 @@ final class LoginCommands extends DrushCommands implements SiteAliasManagerAware
                 [
                   'absolute' => true,
                   'query' => $path ? ['destination' => $path] : [],
-                  'language' => $this->languageManager->getLanguage($account->getPreferredLangcode()),
+                  'language' => \Drupal::languageManager()->getLanguage($account->getPreferredLangcode()),
                 ]
             )->toString();
         }

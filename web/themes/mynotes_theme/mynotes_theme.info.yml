@@ -1,7 +1,7 @@
 name: 'mynotes_theme'
 type: theme
 description: 'Tema personalizado que extiende el tema Olivero.'
-core_version_requirement: ^9 || ^10
+core_version_requirement: ^9 || ^10 || ^11
 base theme: olivero
 package: Custom
 

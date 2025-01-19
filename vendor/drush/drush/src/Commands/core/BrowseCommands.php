@@ -4,24 +4,32 @@ declare(strict_types=1);
 
 namespace Drush\Commands\core;
 
+use Consolidation\SiteAlias\SiteAliasManagerInterface;
 use Drupal\Core\Url;
 use Drush\Attributes as CLI;
 use Drush\Boot\DrupalBootLevels;
+use Drush\Commands\AutowireTrait;
 use Drush\Commands\DrushCommands;
 use Drush\Drush;
 use Drush\Exec\ExecTrait;
-use Consolidation\SiteAlias\SiteAliasManagerAwareInterface;
-use Consolidation\SiteAlias\SiteAliasManagerAwareTrait;
 
-final class BrowseCommands extends DrushCommands implements SiteAliasManagerAwareInterface
+final class BrowseCommands extends DrushCommands
 {
+    use AutowireTrait;
     use ExecTrait;
-    use SiteAliasManagerAwareTrait;
+
+    const BROWSE = 'browse';
+
+    public function __construct(
+        private readonly SiteAliasManagerInterface $siteAliasManager
+    ) {
+        parent::__construct();
+    }
 
     /**
      * Display a link to a given path or open link in a browser.
      */
-    #[CLI\Command(name: 'browse')]
+    #[CLI\Command(name: self::BROWSE)]
     #[CLI\Argument(name: 'path', description: 'Path to open. If omitted, the site front page will be opened.')]
     #[CLI\Option(name: 'browser', description: 'Open the URL in the default browser. Use --no-browser to avoid opening a browser.')]
     #[CLI\Option(name: 'redirect-port', description: 'The port that the web server is redirected to (e.g. when running within a Vagrant environment).')]
@@ -31,11 +39,11 @@ final class BrowseCommands extends DrushCommands implements SiteAliasManagerAwar
     #[CLI\HandleRemoteCommands]
     public function browse($path = '', array $options = ['browser' => true, 'redirect-port' => self::REQ])
     {
-        $aliasRecord = $this->siteAliasManager()->getSelf();
+        $aliasRecord = $this->siteAliasManager->getSelf();
         // Redispatch if called against a remote-host so a browser is started on the
         // the *local* machine.
         if ($this->processManager()->hasTransport($aliasRecord)) {
-            $process = $this->processManager()->drush($aliasRecord, 'browse', [$path], Drush::redispatchOptions());
+            $process = $this->processManager()->drush($aliasRecord, self::BROWSE, [$path], Drush::redispatchOptions());
             $process->mustRun();
             $link = $process->getOutput();
         } else {

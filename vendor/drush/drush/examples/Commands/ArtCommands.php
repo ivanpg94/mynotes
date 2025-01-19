@@ -9,21 +9,13 @@ use Consolidation\AnnotatedCommand\Events\CustomEventAwareTrait;
 use Consolidation\AnnotatedCommand\Hooks\HookManager;
 use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use Drush\Attributes as CLI;
-use Drush\Style\DrushStyle;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Run these commands using the --include option - e.g. `drush --include=/path/to/drush/examples art sandwich`
  *
- * For an example of a Drupal module implementing commands, see
- * - http://cgit.drupalcode.org/devel/tree/devel_generate/src/Commands
- * - http://cgit.drupalcode.org/devel/tree/devel_generate/drush.services.yml
- *
- * This file is a good example of the first of those bullets (a commandfile) but
- * since it isn't part of a module, it does not implement drush.services.yml.
- *
- * See [Drush Test Traits](https://github.com/drush-ops/drush/blob/12.x/docs/contribute/unish.md#about-the-test-suites) for info on testing Drush commands.
+ * See [Drush Test Traits](https://github.com/drush-ops/drush/blob/13.x/docs/contribute/unish.md#about-the-test-suites) for info on testing Drush commands.
  */
 
 class ArtCommands extends DrushCommands implements CustomEventAwareInterface
@@ -88,7 +80,7 @@ class ArtCommands extends DrushCommands implements CustomEventAwareInterface
      * more art by implementing a 'drush-art' on-event hook. This on-event
      * hook is defined in the 'findArt' method below.
      */
-    #[CLI\Hook(type: HookManager::ON_EVENT, selector: 'drush-art')]
+    #[CLI\Hook(type: HookManager::ON_EVENT, target: 'drush-art')]
     public function builtInArt()
     {
         return [
@@ -108,14 +100,12 @@ class ArtCommands extends DrushCommands implements CustomEventAwareInterface
     #[CLI\Hook(type: HookManager::INTERACT, target: 'artwork:show')]
     public function interact(InputInterface $input, OutputInterface $output, AnnotationData $annotationData)
     {
-        $io = new DrushStyle($input, $output);
-
         // If the user did not specify any artwork, then prompt for one.
         $art = $input->getArgument('art');
         if (empty($art)) {
             $data = $this->getArt();
             $selections = $this->convertArtListToKeyValue($data);
-            $selection = $io->choice('Select art to display', $selections);
+            $selection = $this->io()->select('Select art to display', $selections);
             $input->setArgument('art', $selection);
         }
     }
